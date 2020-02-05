@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Analgo</title>
+
+    <style media="screen">
+
+      body {
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        text-align: center;
+      }
+
+      table {
+        padding : 20px;
+        margin: 0;
+        cursor: pointer;
+      }
+
+      td {
+        margin: 0;
+        font-size: 2em;
+        padding : 40px;
+        border : 3px solid black;
+      }
+      td:hover {
+        color: lime;
+        border : 3px solid green;
+      }
+
+      tr {
+        margin: 0;
+      }
+
+      button {
+        padding : 15px;
+        background : blue;
+        border : 0px;
+        color : white;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><u>8 Puzzle Game</u></h1>
+    <p>*10116908 Rikad Fauzi Alawi *10116908 Rikad Fauzi Alawi *10116908 Rikad Fauzi Alawi *10116908 Rikad Fauzi Alawi </p>
+
+    <div style="border:1px solid black; text-align: left; width: 30vw; margin: auto">
+        <h3 align="center">Cara Bermain : </h3>
+        <p> 
+          <ul>
+            <li>Mulai Bermain dengan <b style="color: red">klik Acak</b></li>
+            <li><b style="color: red">Geser Kotak</b> menjadi urutan yang benar dengan <b style="color: red">mengklik kotak</b> yang akan di geser</li> 
+            <li><b style="color: red">Klik solve</b> untuk penyelesaian otomatis <b style="color: red">***(F12 untuk melihat proses)</b></li>
+          </ul>
+        </p>    
+    </div>
+
+    <div align="center">
+      <br>
+      <br>
+      <button type="button" name="button" onclick="random()">Acak</button>
+      <button type="button" name="button" onclick="solve()">Solve</button>
+  
+      <table>
+        <tr>
+          <td id="block1" onclick="slide(0)">1</td>
+          <td id="block2" onclick="slide(1)">2</td>
+          <td id="block3" onclick="slide(2)">3</td>
+        </tr>
+        <tr>
+          <td id="block4" onclick="slide(3)">4</td>
+          <td id="block5" onclick="slide(4)">5</td>
+          <td id="block6" onclick="slide(5)">6</td>
+        </tr>
+        <tr>
+          <td id="block7" onclick="slide(6)">7</td>
+          <td id="block8" onclick="slide(7)">8</td>
+          <td id="block9" onclick="slide(8) "></td>
+        </tr>
+      </table>
+
+    </div>
+
+  </body>
+
+  <script type="text/javascript">
+
+    var stateNull = 8;
+    var randomMode = false;
+    var final = [
+        { x:0, y: 0, value : '1', up: false, bottom: 3, left: false, right: 1 },
+        { x:1, y: 0, value : '2', up: false, bottom: 4, left: 0, right: 2 },
+        { x:2, y: 0, value : '3', up: false, bottom: 5, left: 1, right: false },
+        { x:0, y: 1, value : '4', up: 0, bottom: 6, left: false, right: 4 },
+        { x:1, y: 1, value : '5', up: 1, bottom: 7, left: 3, right: 5 },
+        { x:2, y: 1, value : '6', up: 2, bottom: 8, left: 4, right: false },
+        { x:0, y: 2, value : '7', up: 3, bottom: false, left: false, right: 7 },
+        { x:1, y: 2, value : '8', up: 4, bottom: false, left: 6, right: 8 },
+        { x:2, y: 2, value : null, up: 5, bottom: false, left: 7, right: false },
+    ];
+    var historySolution = [];
+    var state = JSON.parse(JSON.stringify(final));
+
+    function slide(id) {
+
+      var block = state[id];
+
+      if (state[block.up] != undefined && state[block.up].value == null ) {
+        return move(id,block.up, 'Atas');
+      }
+      if (state[block.bottom] != undefined && state[block.bottom].value == null ) {
+        return move(id,block.bottom, 'Bawah');
+      }
+      if (state[block.left] != undefined && state[block.left].value == null ) {
+        return move(id,block.left, 'Kiri');
+      }
+      if (state[block.right] != undefined && state[block.right].value == null ) {
+        return move(id,block.right, 'Kanan');
+      }
+
+    }
+
+    function move(sourceId,destinationId,message) {
+      state[destinationId].value = state[sourceId].value;
+      state[sourceId].value = null;
+      console.log(message);
+
+      document.getElementById('block'+(destinationId+1)).innerHTML = state[destinationId].value;
+      document.getElementById('block'+(sourceId+1)).innerHTML = '';
+      stateNull = sourceId;
+
+      setTimeout(function() {        
+        if (checkIsSuccess() && randomMode == false) {
+          alert('Yeay !, Anda Berhasil Menyelesaikan Game ini.')
+        }
+      }, 100);
+
+    }
+
+
+    function checkCanMove(id){
+      var moves = [];
+
+      if (state[id].up != false) {
+        moves.push('up');
+      }
+      if (state[id].bottom != false) {
+        moves.push('bottom');
+      }
+      if (state[id].left != false) {
+        moves.push('left');
+      }
+      if (state[id].right != false) {
+        moves.push('right');
+      }
+
+      return moves;
+    }
+
+    function compareState(state, goal) {
+      var check = true;
+
+      goal.forEach(function(v,i) {
+
+        if (i != 8 && v.value != state[i].value) {
+          check = false;
+        }
+
+      });
+
+      return check;
+    }
+
+    function checkIsSuccess() {
+      var check = true;
+
+      state.forEach(function(v,i) {
+
+        if (i != 8 && v.value != i+1) {
+          check = false;
+        }
+
+      });
+
+      return check;
+    }
+
+    function random() {
+      var max = 4;
+      var min = 0;
+      var angka = null;
+      var moves = null;
+
+      randomMode = true;
+
+      for (var i = 0; i < 10; i++) {
+
+        moves = checkCanMove(stateNull);
+        max = moves.length;
+        angka = Math.floor(Math.random() * (max - min) ) + min;
+
+        move(state[stateNull][moves[angka]],stateNull,moves[angka]);
+
+      }
+
+      randomMode = false;
+
+    }
+
+    function left() {
+      slide(state[stateNull].right);
+    }
+    function right() {
+      slide(state[stateNull].left);
+    }
+    function up() {
+      slide(state[stateNull].bottom);
+    }
+    function down() {
+      slide(state[stateNull].up);
+    }
+
+    function checkHeuristicNumber(move) {
+      var output = 0;
+      var nextState = JSON.parse(JSON.stringify(state)); //clone state
+
+      var block = false;
+      if(move == 'right') {
+        block = state[stateNull].left;
+      }
+      if(move == 'left') {
+        block = state[stateNull].right;
+      }
+      if(move == 'up') {
+        block = state[stateNull].bottom;
+      }
+      if(move == 'down') {
+        block = state[stateNull].up;
+      }
+      if(block != false) {
+        nextState[stateNull].value = state[block].value;
+        nextState[block].value = state[stateNull].value;
+      }
+
+      var foundSameSolution = false;
+      historySolution.forEach(function(historyState,i) {
+        if(compareState(nextState, historyState)) {
+          foundSameSolution = i;
+          return true;
+        }
+      });
+
+      if(foundSameSolution != false) {
+        if(foundSameSolution < 10) {
+          return 99;
+        }
+        
+        return foundSameSolution;
+      }
+
+      //check nextState
+      nextState.forEach(function(v,i) {
+
+        var goal = final.find(function(k) {
+          return k.value == v.value;
+        });
+
+        var distance = Math.abs(v.x - goal.x) + Math.abs(v.y - goal.y);
+        output += distance;
+
+        // if(v.value != final[i].value) {   // Heuristic distance hamming
+        //   output++;
+        // }
+
+      });
+
+      return output;
+    }
+
+    function fillHistorySolution() {
+      if(historySolution.length == 99) {
+        historySolution = [];
+      }
+      historySolution.push(JSON.parse(JSON.stringify(state)));
+    }
+
+    function clearHistorySolution() {
+      historySolution = [];
+    }
+
+    function solve() {
+
+      var max = 100;
+      var i = 0;
+
+      clearHistorySolution();
+
+      console.log('-------------- Solver Starting ---------------');
+
+      var proses = setInterval(function() {
+
+        var blockKosong = state[stateNull];
+
+        var isRight = blockKosong.left != false ? checkHeuristicNumber('right') : max;
+        var isLeft = blockKosong.right != false ? checkHeuristicNumber('left') : max;
+        var isUp = blockKosong.bottom != false ? checkHeuristicNumber('up') : max;
+        var isDown = blockKosong.up != false ? checkHeuristicNumber('down') : max;
+
+        console.log(i +' Solution = Right:' + isRight +' Left:' + isLeft + ' Up:', isUp + ' Down:' + isDown);
+
+        var solution = { value : max, action : false };
+
+        if(isRight < solution.value) {
+          solution.value = isRight;
+          solution.action = right;
+        }
+
+        if(isLeft < solution.value) {
+          solution.value = isLeft;
+          solution.action = left;
+        }
+
+        if(isUp < solution.value) {
+          solution.value = isUp;
+          solution.action = up;
+        }
+
+        if(isDown < solution.value) {
+          solution.value = isDown;
+          solution.action = down;
+        }
+
+        solution.action();          
+        fillHistorySolution();
+        i++;
+
+        if(checkIsSuccess()) {  //terminate logic
+          clearInterval(proses);
+        }
+
+      }, 150);
+
+    }
+
+  </script>
+</html>
